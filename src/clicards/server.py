@@ -7,7 +7,12 @@ from pathlib import Path
 
 import websockets
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+import sys
+
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    DATA_DIR = Path(sys._MEIPASS) / "clicards" / "data"
+else:
+    DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def load_cards(filename):

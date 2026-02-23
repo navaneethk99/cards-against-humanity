@@ -18,7 +18,10 @@ from rich.text import Text
 
 console = Console()
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    DATA_DIR = Path(sys._MEIPASS) / "clicards" / "data"
+else:
+    DATA_DIR = Path(__file__).resolve().parent / "data"
 SERVER_URL = os.getenv("CAH_SERVER_URL", "ws://localhost:8765")
 
 
