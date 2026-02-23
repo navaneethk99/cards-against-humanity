@@ -211,12 +211,16 @@ async def select_from_list_async(prompt, options, header_renderables=None):
 
 
 async def play_online():
-    console.print(f"[dim]Server:[/dim] {SERVER_URL}")
     create_room_index = await select_from_list_async(
         "Create a new room?",
         ["Yes, create a room", "No, join a room"],
     )
     create_room = create_room_index == 0
+
+    server_url = await prompt_async("Enter server URL", default=SERVER_URL)
+    server_url = server_url.strip()
+
+    console.print(f"[dim]Server:[/dim] {server_url}")
 
     if create_room:
         room_code = generate_room_code()
@@ -232,7 +236,7 @@ async def play_online():
     czar_panel = None
 
     try:
-        async with websockets.connect(SERVER_URL) as ws:
+        async with websockets.connect(server_url) as ws:
             await ws.send(
                 json.dumps(
                     {
@@ -364,7 +368,7 @@ async def play_online():
     except OSError:
         console.print(
             "[bold red]Could not connect to server.[/bold red] "
-            f"Is it running at {SERVER_URL}?"
+            f"Is it running at {server_url}?"
         )
         return
 
