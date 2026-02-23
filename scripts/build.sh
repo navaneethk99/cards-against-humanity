@@ -16,14 +16,14 @@ DATA_ARG="src/clicards/data:clicards/data"
 ${PYTHON_BIN} -m PyInstaller --clean --onefile \
   --name clicards \
   --add-data "${DATA_ARG}" \
-  --collect-data rich \
+  --collect-all rich \
   --paths "src" \
   "src/clicards/client.py"
 
 ${PYTHON_BIN} -m PyInstaller --clean --onefile \
   --name clicards-server \
   --add-data "${DATA_ARG}" \
-  --collect-data rich \
+  --collect-all rich \
   --paths "src" \
   "src/clicards/server.py"
 

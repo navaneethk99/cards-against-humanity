@@ -19,7 +19,7 @@ $clientArgs = @(
   "--clean", "--onefile",
   "--name", "clicards",
   "--add-data", $DataArg,
-  "--collect-data", "rich",
+  "--collect-all", "rich",
   "--paths", "src",
   "src/clicards/client.py"
 )
@@ -30,7 +30,7 @@ $serverArgs = @(
   "--clean", "--onefile",
   "--name", "clicards-server",
   "--add-data", $DataArg,
-  "--collect-data", "rich",
+  "--collect-all", "rich",
   "--paths", "src",
   "src/clicards/server.py"
 )
