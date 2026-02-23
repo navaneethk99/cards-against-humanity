@@ -32,8 +32,8 @@ python3 --version
 Clone and install in editable mode:
 
 ```bash
-git clone https://github.com/yourusername/cards-against-humanity-cli.git
-cd cards-against-humanity-cli
+git clone https://github.com/navaneethk99/cards-against-humanity
+cd cards-against-humanity
 ```
 
 macOS/Linux:
