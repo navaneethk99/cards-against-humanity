@@ -335,7 +335,7 @@ async def play_online():
                         message["black_card"], title="Black Card", style="bold white"
                     )
                     czar_panel = render_czar_panel(message["czar"])
-                clear_screen()
+                    clear_screen()
                     console.print(black_panel)
                     console.print(czar_panel)
 
