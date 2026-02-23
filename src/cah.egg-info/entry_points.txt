@@ -1,0 +1,2 @@
+[console_scripts]
+cah = cah.client:main
