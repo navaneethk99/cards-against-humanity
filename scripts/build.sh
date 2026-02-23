@@ -16,11 +16,13 @@ DATA_ARG="src/clicards/data:clicards/data"
 ${PYTHON_BIN} -m PyInstaller --clean --onefile \
   --name clicards \
   --add-data "${DATA_ARG}" \
-  -m clicards.client
+  --paths "src" \
+  "src/clicards/client.py"
 
 ${PYTHON_BIN} -m PyInstaller --clean --onefile \
   --name clicards-server \
   --add-data "${DATA_ARG}" \
-  -m clicards.server
+  --paths "src" \
+  "src/clicards/server.py"
 
 echo "Binaries are in ${DIST_DIR}"

@@ -19,7 +19,8 @@ $clientArgs = @(
   "--clean", "--onefile",
   "--name", "clicards",
   "--add-data", $DataArg,
-  "-m", "clicards.client"
+  "--paths", "src",
+  "src/clicards/client.py"
 )
 & $PythonBin @clientArgs
 
@@ -28,7 +29,8 @@ $serverArgs = @(
   "--clean", "--onefile",
   "--name", "clicards-server",
   "--add-data", $DataArg,
-  "-m", "clicards.server"
+  "--paths", "src",
+  "src/clicards/server.py"
 )
 & $PythonBin @serverArgs
 
