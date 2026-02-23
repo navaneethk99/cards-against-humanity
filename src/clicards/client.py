@@ -47,8 +47,16 @@ class Player:
         self.score = 0
 
 
-def splash():
+def clear_screen():
     console.clear()
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
+
+
+def splash():
+    clear_screen()
     title = Text(
         """
 ░█████╗░██╗░░░░░██╗░█████╗░░█████╗░██████╗░██████╗░░██████╗
@@ -159,7 +167,7 @@ def select_from_list(prompt, options, header_renderables=None):
     header_renderables = header_renderables or []
 
     def render():
-        console.clear()
+        clear_screen()
         for renderable in header_renderables:
             console.print(renderable)
         console.print(f"\n[bold yellow]{prompt}[/bold yellow]")
@@ -327,7 +335,7 @@ async def play_online():
                         message["black_card"], title="Black Card", style="bold white"
                     )
                     czar_panel = render_czar_panel(message["czar"])
-                    console.clear()
+                clear_screen()
                     console.print(black_panel)
                     console.print(czar_panel)
 
