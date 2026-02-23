@@ -25,15 +25,4 @@ $clientArgs = @(
 )
 & $PythonBin @clientArgs
 
-$serverArgs = @(
-  "-m", "PyInstaller",
-  "--clean", "--onefile",
-  "--name", "clicards-server",
-  "--add-data", $DataArg,
-  "--collect-all", "rich",
-  "--paths", "src",
-  "src/clicards/server.py"
-)
-& $PythonBin @serverArgs
-
 Write-Host "Binaries are in $DistDir"

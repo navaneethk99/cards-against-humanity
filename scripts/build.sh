@@ -20,11 +20,4 @@ ${PYTHON_BIN} -m PyInstaller --clean --onefile \
   --paths "src" \
   "src/clicards/client.py"
 
-${PYTHON_BIN} -m PyInstaller --clean --onefile \
-  --name clicards-server \
-  --add-data "${DATA_ARG}" \
-  --collect-all rich \
-  --paths "src" \
-  "src/clicards/server.py"
-
 echo "Binaries are in ${DIST_DIR}"

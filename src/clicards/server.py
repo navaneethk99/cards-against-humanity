@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import json
+import os
 import random
 import socket
 import urllib.error
@@ -282,7 +283,8 @@ async def main_async(host, port):
 def main():
     parser = argparse.ArgumentParser(description="Cards Against Humanity server")
     parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", default=8765, type=int)
+    default_port = int(os.getenv("PORT", "8765"))
+    parser.add_argument("--port", default=default_port, type=int)
     args = parser.parse_args()
 
     display_host = args.host
