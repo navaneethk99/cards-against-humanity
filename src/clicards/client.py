@@ -3,11 +3,16 @@ import json
 import os
 import random
 import sys
-import termios
-import tty
+try:
+    import termios
+    import tty
+except ImportError:  # Windows
+    termios = None
+    tty = None
 from pathlib import Path
 
 import websockets
+from websockets.exceptions import InvalidURI
 from rich import box
 from rich.align import Align
 from rich.console import Console
@@ -116,6 +121,24 @@ def build_submissions_table(shuffled):
 
 
 def read_key():
+    if termios is None:
+        import msvcrt
+
+        first = msvcrt.getch()
+        if first in (b"\x00", b"\xe0"):
+            second = msvcrt.getch()
+            if second == b"H":
+                return "\x1b[A"
+            if second == b"P":
+                return "\x1b[B"
+            return ""
+        if first == b"\r":
+            return "\n"
+        try:
+            return first.decode()
+        except UnicodeDecodeError:
+            return ""
+
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -155,6 +178,17 @@ def select_from_list(prompt, options, header_renderables=None):
             index = (index + 1) % len(options)
         elif key in ("\r", "\n"):
             return index
+
+
+def normalize_server_url(value):
+    value = value.strip()
+    if value.startswith("https://"):
+        return "wss://" + value[len("https://") :]
+    if value.startswith("http://"):
+        return "ws://" + value[len("http://") :]
+    if value.startswith("ws://") or value.startswith("wss://"):
+        return value
+    return "ws://" + value
 
 
 def play_round(players):
@@ -221,7 +255,7 @@ async def play_online():
     create_room = create_room_index == 0
 
     server_url = await prompt_async("Enter server URL", default=SERVER_URL)
-    server_url = server_url.strip()
+    server_url = normalize_server_url(server_url)
 
     console.print(f"[dim]Server:[/dim] {server_url}")
 
@@ -368,6 +402,11 @@ async def play_online():
                         f"[bold magenta]{message['message']}[/bold magenta]"
                     )
                     return
+    except InvalidURI:
+        console.print(
+            "[bold red]Invalid server URL.[/bold red] Use ws:// or wss://"
+        )
+        return
     except OSError:
         console.print(
             "[bold red]Could not connect to server.[/bold red] "
