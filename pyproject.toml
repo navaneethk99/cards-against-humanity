@@ -7,8 +7,11 @@ name = "clicards"
 version = "0.1.0"
 description = "CLI Cards Against Humanity"
 authors = [{ name = "Navaneeth Krishna" }]
-dependencies = ["rich"]
+dependencies = ["rich", "websockets"]
 requires-python = ">=3.9"
+
+[project.optional-dependencies]
+packaging = ["pyinstaller>=6.0"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -21,3 +24,4 @@ clicards = ["data/*.json"]
 
 [project.scripts]
 clicards = "clicards.client:main"
+clicards-server = "clicards.server:main"

@@ -10,66 +10,61 @@ A small, terminal-based, fan-made implementation inspired by the Cards Against H
 - Card Czar selection and judging
 - Scoreboard tracking
 - Local multiplayer in one terminal
-- Installable `cah` CLI command
+- Online multiplayer with room codes (requires server)
+- Installable `clicards` CLI command
 
 ---
 
-## Requirements
+## Download
 
-- Python 3.9+
-- `pip`
-
-Check your Python version:
-
-```bash
-python3 --version
+Grab the latest release for your OS here:
+```
+https://github.com/navaneethk99/cards-against-humanity/releases
 ```
 
 ---
 
-## Install
+## Install & Play
 
-Clone and install in editable mode:
+Download the latest release for your operating system and run the client.
 
+macOS:
 ```bash
-git clone https://github.com/navaneethk99/cards-against-humanity
-cd cards-against-humanity
+./clicards
 ```
 
-macOS/Linux:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
-
-Windows (PowerShell):
-
+Windows:
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -e .
+.\clicards.exe
+```
+
+Linux:
+```bash
+./clicards
 ```
 
 ---
 
-## Run
+## Play Online
 
-```bash
-cah
-```
+1. Choose `online`.
+2. Create a room to get a code, or join using a friend’s code.
+
+---
+
+## Play Local
+
+1. Choose `local`.
+2. Enter player names separated by commas.
 
 ---
 
 ## How To Play
 
-1. Run `cah`.
-2. Enter player names separated by commas.
-3. Each round, a random player becomes the Card Czar.
-4. Non-Czar players choose a card from their hand by number.
-5. The Czar picks the winning card; the winner gains a point.
-6. Choose whether to play another round.
+1. A random player becomes the Card Czar.
+2. Non-Czar players choose a card from their hand.
+3. The Czar picks the winning card; the winner gains a point.
+4. Keep playing as long as you want.
 
 ---
 
