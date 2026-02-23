@@ -2,6 +2,9 @@ import argparse
 import asyncio
 import json
 import random
+import socket
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -281,6 +284,21 @@ def main():
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", default=8765, type=int)
     args = parser.parse_args()
+
+    display_host = args.host
+    if display_host in ("0.0.0.0", "::"):
+        display_host = "YOUR_PUBLIC_IP"
+        try:
+            with urllib.request.urlopen("https://api.ipify.org", timeout=2) as resp:
+                ip = resp.read().decode("utf-8").strip()
+                if ip:
+                    display_host = ip
+        except (urllib.error.URLError, socket.timeout):
+            pass
+    print(
+        "Server is running successfully. Your friends can join using "
+        f"ws://{display_host}:{args.port}"
+    )
 
     asyncio.run(main_async(args.host, args.port))
 
