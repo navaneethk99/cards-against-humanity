@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: cah
-Version: 0.1.0
-Summary: CLI Cards Against Humanity
-Author: Navaneeth Krishna
-Requires-Python: >=3.9
-Requires-Dist: rich
