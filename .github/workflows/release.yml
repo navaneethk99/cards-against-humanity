@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "v*"
+  release:
+    types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -31,7 +34,8 @@ jobs:
 
       - name: Build (macOS/Linux)
         if: runner.os != 'Windows'
-        run: ./scripts/build.sh
+        run: |
+          bash ./scripts/build.sh
 
       - name: Build (Windows)
         if: runner.os == 'Windows'

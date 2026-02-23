@@ -14,14 +14,22 @@ $PythonBin = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
 
 $DataArg = "src/clicards/data;clicards/data"
 
-& $PythonBin -m PyInstaller --clean --onefile `
-  --name clicards `
-  --add-data $DataArg `
-  -m clicards.client
+$clientArgs = @(
+  "-m", "PyInstaller",
+  "--clean", "--onefile",
+  "--name", "clicards",
+  "--add-data", $DataArg,
+  "-m", "clicards.client"
+)
+& $PythonBin @clientArgs
 
-& $PythonBin -m PyInstaller --clean --onefile `
-  --name clicards-server `
-  --add-data $DataArg `
-  -m clicards.server
+$serverArgs = @(
+  "-m", "PyInstaller",
+  "--clean", "--onefile",
+  "--name", "clicards-server",
+  "--add-data", $DataArg,
+  "-m", "clicards.server"
+)
+& $PythonBin @serverArgs
 
 Write-Host "Binaries are in $DistDir"
