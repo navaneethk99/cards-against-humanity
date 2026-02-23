@@ -1,4 +1,6 @@
+import json
 import random
+from pathlib import Path
 
 from rich import box
 from rich.align import Align
@@ -10,21 +12,17 @@ from rich.text import Text
 
 console = Console()
 
-black_cards = [
-    "Why can't I sleep at night? ____.",
-    "I got 99 problems but ____ ain't one.",
-    "What's that smell? ____.",
-]
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
-white_cards = [
-    "Grandma.",
-    "A bag of magic beans.",
-    "My internet history.",
-    "A dramatic hamster.",
-    "Python bugs.",
-    "An existential crisis.",
-    "A suspiciously specific amount of cheese.",
-]
+
+def load_cards(filename):
+    path = DATA_DIR / filename
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+black_cards = load_cards("black_cards.json")
+white_cards = load_cards("white_cards.json")
 
 
 class Player:
@@ -35,7 +33,7 @@ class Player:
 
 
 def splash():
-    # console.clear()
+    console.clear()
     title = Text("CARDS AGAINST HUMANITY", style="bold magenta")
     subtitle = Text("CLI Edition", style="bold cyan")
     console.print(Align.center(title))
