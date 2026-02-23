@@ -1,5 +1,7 @@
 # Cards Against Humanity – CLI Edition
 
+[![Release](https://img.shields.io/github/v/release/navaneethk99/cards-against-humanity?include_prereleases)](https://github.com/navaneethk99/cards-against-humanity/releases)
+
 A small, terminal-based, fan-made implementation inspired by the Cards Against Humanity party card game. It runs locally in a single terminal and uses a tiny, built-in sample deck for demo play. It is **not** affiliated with or endorsed by Cards Against Humanity LLC.
 
 ---
