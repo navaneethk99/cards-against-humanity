@@ -44,6 +44,8 @@ class Room:
     host: Player | None = None
     czar: Player | None = None
     black_card: str | None = None
+    white_deck: list[str] = field(default_factory=list)
+    black_deck: list[str] = field(default_factory=list)
     submissions: list[tuple[Player, str]] = field(default_factory=list)
     phase: str = "lobby"
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
@@ -52,9 +54,31 @@ class Room:
 rooms: dict[str, Room] = {}
 
 
-def deal_cards(player, num=5):
-    if len(player.hand) == 0:
-        player.hand = random.sample(white_cards, num)
+def reset_decks(room):
+    room.white_deck = list(white_cards)
+    room.black_deck = list(black_cards)
+    random.shuffle(room.white_deck)
+    random.shuffle(room.black_deck)
+
+
+def draw_white(room, num):
+    if num <= 0:
+        return []
+    draw_count = min(num, len(room.white_deck))
+    return [room.white_deck.pop() for _ in range(draw_count)]
+
+
+def draw_black(room):
+    if not room.black_deck:
+        return None
+    return room.black_deck.pop()
+
+
+def refill_hand(room, player, target_size=5):
+    needed = target_size - len(player.hand)
+    if needed <= 0:
+        return
+    player.hand.extend(draw_white(room, needed))
 
 
 async def send(ws, payload):
@@ -69,13 +93,23 @@ async def broadcast(room, payload, exclude=None):
 
 
 async def start_round(room):
-    room.black_card = random.choice(black_cards)
+    room.black_card = draw_black(room)
+    if room.black_card is None:
+        room.phase = "lobby"
+        await broadcast(
+            room,
+            {
+                "type": "game_over",
+                "message": "No more black cards. Game ended.",
+            },
+        )
+        return
     room.czar = random.choice(room.players)
     room.submissions = []
     room.phase = "collecting"
 
     for player in room.players:
-        deal_cards(player)
+        refill_hand(room, player)
 
     await broadcast(
         room,
@@ -107,6 +141,7 @@ async def handle_submit(room, player, index):
         return
 
     card = player.hand.pop(index)
+    refill_hand(room, player)
     room.submissions.append((player, card))
     await send(player.ws, {"type": "wait", "message": "Submission received."})
 
@@ -212,6 +247,7 @@ async def handler(ws):
                 await send(ws, {"type": "error", "message": "Room exists."})
                 return
             room = Room(code=room_code)
+            reset_decks(room)
             rooms[room_code] = room
         else:
             room = rooms.get(room_code)
