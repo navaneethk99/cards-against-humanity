@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import random
+import sys
 
 import websockets
 from websockets.exceptions import InvalidURI
@@ -16,6 +17,7 @@ from .ui import (
     prompt_async,
     render_czar_panel,
     select_from_list_async,
+    spinner_until,
 )
 
 SERVER_URL = os.getenv("CAH_SERVER_URL", "ws://localhost:8765")
@@ -61,7 +63,10 @@ async def play_online():
 
     black_panel = None
     czar_panel = None
-
+    is_host = False
+    lobby_active = True
+    lobby_task = None
+    remove_lobby_reader = None
     try:
         async with websockets.connect(server_url) as ws:
             await ws.send(
@@ -74,13 +79,18 @@ async def play_online():
                     }
                 )
             )
-
-            is_host = False
-            pending_start_task = None
+            wait_task = None
+            wait_event = None
 
             async for raw in ws:
                 message = json.loads(raw)
                 msg_type = message.get("type")
+
+                if msg_type != "wait" and wait_task is not None:
+                    wait_event.set()
+                    await wait_task
+                    wait_task = None
+                    wait_event = None
 
                 if msg_type == "error":
                     console.print(
@@ -96,16 +106,52 @@ async def play_online():
                         f"[dim]Players:[/dim] {', '.join(message['players'])}"
                     )
                     is_host = message.get("host") == username
+                    if lobby_active and lobby_task is None:
+                        loop = asyncio.get_running_loop()
+                        queue = asyncio.Queue()
+
+                        def on_stdin():
+                            line = sys.stdin.readline()
+                            if line:
+                                queue.put_nowait(line.rstrip("\n"))
+
+                        if hasattr(loop, "add_reader") and sys.stdin.isatty():
+                            loop.add_reader(sys.stdin, on_stdin)
+                            remove_lobby_reader = lambda: loop.remove_reader(sys.stdin)
+
+                            async def lobby_input_loop():
+                                while True:
+                                    line = await queue.get()
+                                    if not lobby_active:
+                                        continue
+                                    text = line.strip()
+                                    if not text:
+                                        continue
+                                    if text.startswith("/start"):
+                                        if is_host:
+                                            await ws.send(
+                                                json.dumps({"type": "start"})
+                                            )
+                                        else:
+                                            console.print(
+                                                "[dim]Only the host can start the game.[/dim]"
+                                            )
+                                    else:
+                                        await ws.send(
+                                            json.dumps(
+                                                {"type": "chat", "message": text}
+                                            )
+                                        )
+
+                            lobby_task = asyncio.create_task(lobby_input_loop())
+
                     if is_host:
                         console.print(
-                            "[dim]You are the host. Press Enter to start when ready.[/dim]"
+                            "[dim]You are the host. Type /start to begin.[/dim]"
                         )
-
-                        async def wait_for_start():
-                            await asyncio.to_thread(input)
-                            await ws.send(json.dumps({"type": "start"}))
-
-                        pending_start_task = asyncio.create_task(wait_for_start())
+                    console.print(
+                        "[dim]Lobby chat: type a message and press Enter.[/dim]"
+                    )
 
                 elif msg_type == "players":
                     console.print(
@@ -113,6 +159,13 @@ async def play_online():
                     )
 
                 elif msg_type == "round_start":
+                    lobby_active = False
+                    if lobby_task is not None:
+                        lobby_task.cancel()
+                        lobby_task = None
+                    if remove_lobby_reader is not None:
+                        remove_lobby_reader()
+                        remove_lobby_reader = None
                     black_panel = Panel(
                         message["black_card"], title="Black Card", style="bold white"
                     )
@@ -123,15 +176,10 @@ async def play_online():
 
                 elif msg_type == "request_submit":
                     hand = message["hand"]
-                    hand_table = Table(title=f"{username}'s Hand", box=box.ROUNDED)
-                    hand_table.add_column("Index", style="cyan")
-                    hand_table.add_column("Card", style="white")
-                    for i, card in enumerate(hand):
-                        hand_table.add_row(str(i + 1), card)
                     choice_index = await select_from_list_async(
                         f"{username}, choose a card",
                         hand,
-                        header_renderables=[black_panel, czar_panel, hand_table],
+                        header_renderables=[black_panel, czar_panel],
                     )
                     await ws.send(
                         json.dumps({"type": "submit", "index": choice_index})
@@ -172,9 +220,19 @@ async def play_online():
                         console.print(table)
 
                 elif msg_type == "wait":
-                    console.print(
-                        f"[dim]{message.get('message', 'Waiting...')}[/dim]"
+                    wait_message = message.get("message", "Waiting...")
+                    if wait_task is not None:
+                        wait_event.set()
+                        await wait_task
+                    wait_event = asyncio.Event()
+                    wait_task = asyncio.create_task(
+                        spinner_until(wait_message, wait_event, spinner_name="dots")
                     )
+
+                elif msg_type == "chat":
+                    sender = message.get("from", "Unknown")
+                    text = message.get("message", "")
+                    console.print(f"[cyan]{sender}:[/cyan] {text}")
 
                 elif msg_type == "continue_request":
                     if is_host:
@@ -188,6 +246,9 @@ async def play_online():
                         )
 
                 elif msg_type == "game_over":
+                    if remove_lobby_reader is not None:
+                        remove_lobby_reader()
+                        remove_lobby_reader = None
                     console.print(
                         f"[bold magenta]{message['message']}[/bold magenta]"
                     )

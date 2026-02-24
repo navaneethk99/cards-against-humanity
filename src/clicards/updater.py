@@ -5,24 +5,52 @@ import sys
 import tarfile
 import tempfile
 import zipfile
-from importlib import metadata
 from pathlib import Path
 import urllib.error
 import urllib.request
 
 from rich.prompt import Prompt
 
-from . import __version__
 from .ui import console
 
 RELEASES_API_URL = "https://api.github.com/repos/navaneethk99/cards-against-humanity/releases/latest"
 
 
-def get_current_version():
+def find_pyproject_path():
+    current = Path(__file__).resolve()
+    for parent in [current] + list(current.parents):
+        candidate = parent / "pyproject.toml"
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def read_version_from_pyproject():
+    path = find_pyproject_path()
+    if path is None:
+        return None
     try:
-        return metadata.version("clicards")
-    except metadata.PackageNotFoundError:
-        return __version__
+        import tomllib  # Python 3.11+
+    except ModuleNotFoundError:
+        try:
+            import tomli as tomllib  # type: ignore
+        except ModuleNotFoundError:
+            return None
+    try:
+        with path.open("rb") as handle:
+            data = tomllib.load(handle)
+    except (OSError, ValueError):
+        return None
+    project = data.get("project", {})
+    version = project.get("version")
+    if isinstance(version, str) and version.strip():
+        return version.strip()
+    return None
+
+
+def get_current_version():
+    version = read_version_from_pyproject()
+    return version or "0.0.0"
 
 
 def parse_version(value):

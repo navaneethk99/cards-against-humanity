@@ -1,13 +1,6 @@
 import random
 
-from rich.panel import Panel
-
-from .ui import (
-    build_hand_table,
-    build_submissions_table,
-    console,
-    render_czar_panel,
-)
+from .ui import build_submissions_table, console, render_black_card_panel, render_czar_panel
 
 
 class Player:
@@ -47,7 +40,7 @@ def play_round(players, white_deck, black_deck, select_from_list):
         return False
     czar = random.choice(players)
 
-    black_panel = Panel(black_card, title="Black Card", style="bold white")
+    black_panel = render_black_card_panel(black_card)
     czar_panel = render_czar_panel(czar.name)
     console.print(black_panel)
     console.print(czar_panel)
@@ -58,11 +51,10 @@ def play_round(players, white_deck, black_deck, select_from_list):
         if player == czar:
             continue
 
-        hand_table = build_hand_table(player.name, player.hand)
         choice_index = select_from_list(
             f"{player.name}, choose a card",
             player.hand,
-            header_renderables=[black_panel, czar_panel, hand_table],
+            header_renderables=[black_panel, czar_panel],
         )
         chosen_card = player.hand.pop(choice_index)
         submissions[player] = chosen_card

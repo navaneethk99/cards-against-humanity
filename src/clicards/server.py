@@ -197,6 +197,24 @@ async def handle_continue(room, player, again):
     await start_round(room)
 
 
+async def handle_chat(room, player, message):
+    if room.phase != "lobby":
+        return
+    text = str(message or "").strip()
+    if not text:
+        return
+    if len(text) > 200:
+        text = text[:200]
+    await broadcast(
+        room,
+        {
+            "type": "chat",
+            "from": player.name,
+            "message": text,
+        },
+    )
+
+
 async def handle_disconnect(room, player):
     if player in room.players:
         room.players.remove(player)
@@ -305,6 +323,8 @@ async def handler(ws):
                     await handle_judge(room, player, int(message.get("index", -1)))
                 elif msg_type == "continue":
                     await handle_continue(room, player, bool(message.get("again")))
+                elif msg_type == "chat":
+                    await handle_chat(room, player, message.get("message"))
     except websockets.ConnectionClosed:
         if room and player:
             async with room.lock:
