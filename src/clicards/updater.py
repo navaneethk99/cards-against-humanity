@@ -54,6 +54,25 @@ def _normalize_version(value):
     return value[1:] if value.startswith("v") else value
 
 
+def read_version_from_package():
+    try:
+        from importlib.metadata import version as pkg_version  # Python 3.8+
+    except Exception:
+        pkg_version = None
+    if pkg_version is not None:
+        try:
+            return _normalize_version(pkg_version("clicards"))
+        except Exception:
+            pass
+    try:
+        from . import __version__
+    except Exception:
+        return None
+    if isinstance(__version__, str) and __version__.strip():
+        return _normalize_version(__version__)
+    return None
+
+
 def write_version_to_pyproject(version):
     path = find_pyproject_path()
     if path is None:
@@ -80,6 +99,9 @@ def write_version_to_pyproject(version):
 
 def get_current_version():
     version = read_version_from_pyproject()
+    if version:
+        return version
+    version = read_version_from_package()
     return version or "0.0.0"
 
 
