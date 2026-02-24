@@ -1,6 +1,7 @@
 import json
 import os
 import platform
+import re
 import sys
 import tarfile
 import tempfile
@@ -48,15 +49,42 @@ def read_version_from_pyproject():
     return None
 
 
+def _normalize_version(value):
+    value = value.strip()
+    return value[1:] if value.startswith("v") else value
+
+
+def write_version_to_pyproject(version):
+    path = find_pyproject_path()
+    if path is None:
+        return False
+    try:
+        contents = path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    normalized = _normalize_version(version)
+    updated, count = re.subn(
+        r'(?m)^version\s*=\s*"[^\"]*"\s*$',
+        f'version = "{normalized}"',
+        contents,
+        count=1,
+    )
+    if count == 0:
+        return False
+    try:
+        path.write_text(updated, encoding="utf-8")
+    except OSError:
+        return False
+    return True
+
+
 def get_current_version():
     version = read_version_from_pyproject()
     return version or "0.0.0"
 
 
 def parse_version(value):
-    value = value.strip()
-    if value.startswith("v"):
-        value = value[1:]
+    value = _normalize_version(value)
     parts = []
     for chunk in value.replace("-", ".").replace("+", ".").split("."):
         if chunk.isdigit():
@@ -213,4 +241,6 @@ def check_for_updates():
         console.print("[bold red]No downloadable asset found in the latest release.[/bold red]")
         return
 
-    apply_update(asset)
+    if apply_update(asset):
+        if not getattr(sys, "frozen", False):
+            write_version_to_pyproject(latest_version)
