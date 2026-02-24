@@ -3,12 +3,16 @@ import json
 import sys
 from pathlib import Path
 
+if __package__ is None:
+    from pathlib import Path as _Path
+    sys.path.append(str(_Path(__file__).resolve().parents[1]))
+
 from rich.prompt import Prompt
 
-from .game_local import Deck, Player, deal_cards, play_round
-from .game_online import play_online
-from .ui import select_from_list, show_scores, splash
-from .updater import check_for_updates
+from clicards.game_local import Deck, Player, deal_cards, play_round
+from clicards.game_online import play_online
+from clicards.ui import select_from_list, show_scores, splash
+from clicards.updater import check_for_updates
 
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     DATA_DIR = Path(sys._MEIPASS) / "clicards" / "data"
@@ -58,7 +62,7 @@ def main():
             if again.lower() != "y":
                 break
 
-        from .ui import console
+        from clicards.ui import console
 
         console.print("\n[bold magenta]Thanks for playing![/bold magenta]")
 
