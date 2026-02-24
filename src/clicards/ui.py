@@ -88,14 +88,20 @@ def splash():
             Align.center(subtitle),
         )
 
-    for i in range(10):
+    try:
+        for i in range(10):
+            clear_screen()
+            console.print(frame(i % 2 == 0))
+            time.sleep(0.08)
         clear_screen()
-        console.print(frame(i % 2 == 0))
-        time.sleep(0.08)
-    clear_screen()
-    console.print(Align.center(title))
-    console.print(Align.center(subtitle))
-    console.print("\n")
+        console.print(Align.center(title))
+        console.print(Align.center(subtitle))
+        console.print("\n")
+    except Exception:
+        clear_screen()
+        console.print("Cards Against Humanity")
+        console.print("Deal weird. Laugh louder. Win no prizes.")
+        console.print("")
 
 
 def build_hand_table(player_name, hand):
